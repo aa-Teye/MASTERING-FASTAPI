@@ -37,11 +37,11 @@
 # print(process_item("halidu"))
 
 
-# def say_hi(name: str | None):
-#     if name is not None:
-#         return(f"Hey i am {name}")
-#     else:
-#         return("hello world")
+def say_hi(name: str | None):
+    if name is not None:
+        return(f"Hey i am {name}")
+    else:
+        return("hello world")
        
 # message = say_hi("alidu")
 # print(message.title())
