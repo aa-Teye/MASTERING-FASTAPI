@@ -19,9 +19,4 @@ def multiply(a: float, b: float):
     return {"operation": "multiplication", "a": a, "b": b, "result": a * b}
 
 # 4. Division Endpoint (with basic error handling)
-@app.get("/divide")
-def divide(a: float, b: float):
-    if b == 0:
-        # Prevent division by zero errors
-        raise HTTPException(status_code=400, detail="Division by zero is not allowed.")
-    return {"operation": "division", "a": a, "b": b, "result": a / b}
+@app.get("/divide
