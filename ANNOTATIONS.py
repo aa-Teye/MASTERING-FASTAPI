@@ -1,5 +1,6 @@
 # from typing import List
-
+#if you are beginner for every aspect of this code comment the rest of the sections you are not working on to avoid confusion 
+# and focus on the one you are working on this prevent unecessary errors and also helps you to understand the code better.
 # def get_full_name(first_name, last_name):
 #     full_name =  first_name.title() + " " + last_name.title()
 #     return full_name
@@ -37,16 +38,23 @@
 # print(process_item("halidu"))
 
 
-def say_hi(name: str | None):
-    if name is not None:
-        return(f"Hey i am {name}")
-    else:
-        return("hello world")
+# def say_hi(name: str | None):
+#     if name is not None:
+#         return(f"Hey i am {name}")
+#     else:
+#         return("hello world")
        
 # message = say_hi("alidu")
 # print(message.title())
 
-def say_hello(name: str):
-    print(f"hello, my name is {name}.How are you doing?")
-    return name.title()
+# def say_hello(name: str):
+#     print(f"hello, my name is {name}.How are you doing?")
+#     return name.title()
+
+
+#hint/ Annotations on Classes 
+class Person:
+    def __init__(self, name: str):
+        self.name = name
+
 
