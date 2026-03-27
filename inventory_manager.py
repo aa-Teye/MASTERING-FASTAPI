@@ -15,7 +15,7 @@ class ONCInventory:
         if name in self.gear:
             item = self.gear[name]
             return f"Inventory Check: {name} | Qty: {item['qty']} | Status: {item['status']}"
-        return " Item not found."
+        return "❌ Item not found."
 
     def list_all(self):
         return self.gear
