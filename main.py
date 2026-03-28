@@ -1,25 +1,38 @@
-from fastapi import FastAPI, HTTPException
-from inventory_manager import InventoryManager # Importing your logic!
+from fastapi import FastAPI, HTTPException, status
+from typing import Dict
+from inventory_manager import InventoryManager
+from schemas import GearCreate, GearUpdate
 
-# 1. Initialize the API and your Logic Engine
-app = FastAPI(title="ONC Media Inventory API")
+app = FastAPI(
+    title="ONC Media Inventory System",
+    description="Professional Backend for Overcomers Nation Church Media Assets",
+    version="1.0.0"
+)
+
+# Initialize our logic engine
 manager = InventoryManager()
 
-# 2. READ: Get all gear (The "Dashboard" view)
-@app.get("/inventory")
-def get_all_inventory():
-    return manager.vault
+@app.get("/inventory", tags=["Inventory"])
+def list_all_gear():
+    """Retrieve the full list of media assets in the vault."""
+    return {"total_count": len(manager.vault), "assets": manager.vault}
 
-# 3. READ: Get a specific item
-@app.get("/inventory/{item_name}")
-def get_item(item_name: str):
-    item = manager.vault.get(item_name)
-    if not item:
-        raise HTTPException(status_code=404, detail="Gear not found")
-    return item
+@app.post("/inventory", status_code=status.HTTP_201_CREATED, tags=["Inventory"])
+def add_gear(gear: GearCreate):
+    """Register a new piece of equipment with validation."""
+    if gear.name in manager.vault:
+        raise HTTPException(status_code=400, detail="Item already exists")
+    
+    manager.add_item(gear.name, gear.qty, gear.status, gear.assigned_to)
+    return {"message": "Asset registered successfully", "asset": gear}
 
-# 4. CREATE: Add new gear via the web
-@app.post("/inventory/add")
-def add_new_gear(name: str, qty: int, status: str = "Operational"):
-    manager.add_item(name, qty, status)
-    return {"message": f"Successfully added {name}", "data": manager.vault[name]}
+@app.patch("/inventory/{name}", tags=["Inventory"])
+def update_gear(name: str, update_data: GearUpdate):
+    """Partially update an asset's status or assignment."""
+    if name not in manager.vault:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    if update_data.status:
+        manager.update_status(name, update_data.status)
+    
+    return {"message": f"Updated {name}", "current_data": manager.vault[name]}
