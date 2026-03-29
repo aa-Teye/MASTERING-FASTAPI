@@ -1,38 +1,38 @@
-from fastapi import FastAPI, HTTPException, status
-from typing import Dict
+from fastapi import FastAPI, HTTPException, Depends
 from inventory_manager import InventoryManager
 from schemas import GearCreate, GearUpdate
+from auth import verify_admin  # Importing your new security bouncer!
 
-app = FastAPI(
-    title="ONC Media Inventory System",
-    description="Professional Backend for Overcomers Nation Church Media Assets",
-    version="1.0.0"
-)
-
-# Initialize our logic engine
+app = FastAPI(title="ONC Media Vault API")
 manager = InventoryManager()
 
-@app.get("/inventory", tags=["Inventory"])
-def list_all_gear():
-    """Retrieve the full list of media assets in the vault."""
-    return {"total_count": len(manager.vault), "assets": manager.vault}
+# --- PUBLIC ROUTES (Anyone can view) ---
 
-@app.post("/inventory", status_code=status.HTTP_201_CREATED, tags=["Inventory"])
-def add_gear(gear: GearCreate):
-    """Register a new piece of equipment with validation."""
+@app.get("/inventory")
+def get_all_gear():
+    return manager.vault
+
+@app.get("/inventory/search")
+def search_gear(status: str = None):
+    if not status:
+        raise HTTPException(status_code=400, detail="Please provide a status.")
+    results = {name: info for name, info in manager.vault.items() if info["status"].lower() == status.lower()}
+    return {"count": len(results), "results": results}
+
+
+# --- SECURE ADMIN ROUTES (Requires Password) ---
+
+# Notice the 'dependencies=[Depends(verify_admin)]' added here!
+@app.post("/inventory/add", dependencies=[Depends(verify_admin)])
+def add_new_gear(gear: GearCreate):
     if gear.name in manager.vault:
-        raise HTTPException(status_code=400, detail="Item already exists")
-    
+        raise HTTPException(status_code=400, detail="Item already exists.")
     manager.add_item(gear.name, gear.qty, gear.status, gear.assigned_to)
-    return {"message": "Asset registered successfully", "asset": gear}
+    return {"message": "Success", "added_item": gear}
 
-@app.patch("/inventory/{name}", tags=["Inventory"])
-def update_gear(name: str, update_data: GearUpdate):
-    """Partially update an asset's status or assignment."""
-    if name not in manager.vault:
-        raise HTTPException(status_code=404, detail="Asset not found")
-    
-    if update_data.status:
-        manager.update_status(name, update_data.status)
-    
-    return {"message": f"Updated {name}", "current_data": manager.vault[name]}
+@app.delete("/inventory/delete/{item_name}", dependencies=[Depends(verify_admin)])
+def delete_gear(item_name: str):
+    if item_name not in manager.vault:
+        raise HTTPException(status_code=404, detail="Item not found.")
+    del manager.vault[item_name]
+    return {"message": f"🚨 Successfully deleted {item_name}."}
