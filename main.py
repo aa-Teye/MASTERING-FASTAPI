@@ -36,3 +36,17 @@ def delete_gear(item_name: str):
         raise HTTPException(status_code=404, detail="Item not found.")
     del manager.vault[item_name]
     return {"message": f"🚨 Successfully deleted {item_name}."}
+
+from audit import get_recent_logs # Add this import at the top of main.py
+
+
+@app.get("/inventory/logs", dependencies=[Depends(verify_admin)])
+def view_system_logs(limit: int = 10):
+    """
+    Secure route to view the most recent activity in the system.
+    """
+    logs = get_recent_logs(limit)
+    return {
+        "message": f"Showing last {limit} actions",
+        "logs": logs
+    }
