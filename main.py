@@ -20,6 +20,7 @@ app = FastAPI(
 )
 
 
+# Allow the future Next.js frontend to communicate with this API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
