@@ -60,11 +60,6 @@ def get_inventory_stats():
     maintenance = sum(1 for g in manager.vault.values() if g["status"].lower() == "maintenance")
     health = (operational / total * 100) if total > 0 else 0
 
-    return {
-        "total_gear_count": total,
-        "ready_to_use": operational,
-        "needs_repair": maintenance,
-        "department_health_score": f"{health:.1f}%"
     }
 
 
