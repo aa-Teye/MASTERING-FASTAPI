@@ -37,8 +37,7 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 manager = InventoryManager()
 
 # ==========================================
-# 🟢 PUBLIC ROUTES (View Only)
-# ==========================================
+
 
 @app.get("/inventory", tags=["Public"])
 def get_all_gear():
