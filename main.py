@@ -36,7 +36,7 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 # Initialize the Logic Engine
 manager = InventoryManager()
 
-# ==========================================
+
 
 
 @app.get("/inventory", tags=["Public"])
