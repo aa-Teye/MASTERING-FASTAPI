@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 
 # --- LOCAL MODULE IMPORTS ---
 from inventory_manager import InventoryManager
-from schemas import GearCreate, GearUpdate
 from auth import verify_admin
 from audit import get_recent_logs
 from export import generate_csv_report
