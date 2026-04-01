@@ -37,37 +37,7 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 manager = InventoryManager()
 
 
-# Make sure FileResponse is imported at the top of main.py
-# from fastapi.responses import FileResponse
-from qr_generator import create_qr_for_gear  # 👈 NEW IMPORT
 
-# --- 🔍 VIEW SINGLE ITEM ROUTE ---
-@app.get("/inventory/item/{item_name}", tags=["Public"])
-def get_single_gear(item_name: str):
-    """View the details of one specific item."""
-    if item_name not in manager.vault:
-        raise HTTPException(status_code=404, detail="Item not found.")
-    return manager.vault[item_name]
-
-# --- 🔲 QR CODE GENERATOR ROUTE ---
-@app.get("/inventory/qr/{item_name}", dependencies=[Depends(verify_admin)], tags=["Admin"])
-def get_gear_qr_code(item_name: str):
-    """
-    Generates and downloads a printable QR code sticker for physical gear.
-    """
-    if item_name not in manager.vault:
-        raise HTTPException(status_code=404, detail="Item not found.")
-        
-    # Generate the physical image
-    file_path = create_qr_for_gear(item_name)
-    
-    # Send it to the user's browser as a downloadable image!
-    safe_name = item_name.replace(" ", "_")
-    return FileResponse(
-        path=file_path, 
-        filename=f"{safe_name}_Asset_Tag.png",
-        media_type="image/png"
-    )
 
 @app.get("/inventory", tags=["Public"])
 def get_all_gear():
