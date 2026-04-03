@@ -32,4 +32,11 @@ def resolve_repair_ticket(gear_data: dict, ticket_id: str, final_cost: float) ->
     if "repair_history" not in gear_data:
         return False
         
- 
+    for ticket in gear_data["repair_history"]:
+        if ticket["ticket_id"] == ticket_id and ticket["status"] == "In Progress":
+            ticket["status"] = "Resolved"
+            ticket["date_resolved"] = datetime.now().strftime("%Y-%m-%d")
+            ticket["final_cost"] = final_cost
+            return True
+            
+    return False
