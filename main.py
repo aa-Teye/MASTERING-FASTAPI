@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 
 # --- LOCAL MODULE IMPORTS ---
 from inventory_manager import InventoryManager
+from schemas import GearCreate, GearUpdate  # 👈 FIXED: Added missing Pydantic schemas
 from auth import verify_admin
 from audit import get_recent_logs
 from export import generate_csv_report
@@ -18,7 +19,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
+# --- 🌐 MIDDLEWARE & STATIC FILES ---
 # Allow the future Next.js frontend to communicate with this API
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +37,9 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 manager = InventoryManager()
 
 
-
+# ==========================================
+# 🟢 PUBLIC ROUTES (View Only)
+# ==========================================
 
 @app.get("/inventory", tags=["Public"])
 def get_all_gear():
@@ -67,6 +70,9 @@ def get_inventory_stats():
     }
 
 
+# ==========================================
+# 🔴 SECURE ADMIN ROUTES (Requires Password)
+# ==========================================
 
 @app.post("/inventory/add", dependencies=[Depends(verify_admin)], tags=["Admin"])
 def add_new_gear(gear: GearCreate):
@@ -101,4 +107,27 @@ def view_system_logs(limit: int = 10):
 @app.get("/inventory/export/csv", dependencies=[Depends(verify_admin)], tags=["Admin"])
 def download_inventory_report():
     """Download a CSV spreadsheet of the current vault."""
-    file_path =
+    # 👈 FIXED: Completed the cut-off code here!
+    file_path = generate_csv_report(manager.vault)
+    return FileResponse(
+        path=file_path, 
+        filename="ONC_Media_Inventory_Report.csv", 
+        media_type="text/csv"
+    )
+
+@app.post("/inventory/upload-image/{item_name}", dependencies=[Depends(verify_admin)], tags=["Admin"])
+def upload_gear_image(item_name: str, file: UploadFile = File(...)):
+    """Upload a photo of the gear."""
+    if item_name not in manager.vault:
+        raise HTTPException(status_code=404, detail="Item not found.")
+    
+    image_url = save_gear_image(file, item_name)
+    manager.vault[item_name]["image_url"] = image_url
+    
+    from database import save_data
+    save_data(manager.vault)
+    
+    from audit import log_action
+    log_action("UPLOAD", item_name, f"Attached image: {file.filename}")
+    
+    return {"message": "Image uploaded successfully", "image_url": image_url}
