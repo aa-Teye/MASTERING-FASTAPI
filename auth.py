@@ -12,7 +12,7 @@ def verify_admin(api_key: str = Security(api_key_header)):
     Dependency function: Checks if the user provided the correct admin password.
     If they fail, it blocks them with a 401 Unauthorized error.
     """
-    if api_key != ADMIN_SECRET_KEY:
+    if api_key != ADMIN_SECRET_KEY;
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Access Denied: Invalid Church Admin Key",
