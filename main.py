@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 
 # --- LOCAL MODULE IMPORTS ---
 from inventory_manager import InventoryManager
-from schemas import GearCreate, GearUpdate  # 👈 FIXED: Added missing Pydantic schemas
+from schemas import GearCreate, GearUpdate  # FIXED: Added missing Pydantic schemas
 from auth import verify_admin
 from audit import get_recent_logs
 from export import generate_csv_report
@@ -19,7 +19,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# --- 🌐 MIDDLEWARE & STATIC FILES ---
+#
 # Allow the future Next.js frontend to communicate with this API
 app.add_middleware(
     CORSMiddleware,
