@@ -37,9 +37,7 @@ app.mount("/images", StaticFiles(directory="images"), name="images")
 manager = InventoryManager()
 
 
-# ==========================================
-# 🟢 PUBLIC ROUTES (View Only)
-# ==========================================
+
 
 @app.get("/inventory", tags=["Public"])
 def get_all_gear():
@@ -70,9 +68,7 @@ def get_inventory_stats():
     }
 
 
-# ==========================================
-# 🔴 SECURE ADMIN ROUTES (Requires Password)
-# ==========================================
+
 
 @app.post("/inventory/add", dependencies=[Depends(verify_admin)], tags=["Admin"])
 def add_new_gear(gear: GearCreate):
