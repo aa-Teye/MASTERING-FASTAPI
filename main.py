@@ -111,19 +111,3 @@ def download_inventory_report():
         media_type="text/csv"
     )
 
-@app.post("/inventory/upload-image/{item_name}", dependencies=[Depends(verify_admin)], tags=["Admin"])
-def upload_gear_image(item_name: str, file: UploadFile = File(...)):
-    """Upload a photo of the gear."""
-    if item_name not in manager.vault:
-        raise HTTPException(status_code=404, detail="Item not found.")
-    
-    image_url = save_gear_image(file, item_name)
-    manager.vault[item_name]["image_url"] = image_url
-    
-    from database import save_data
-    save_data(manager.vault)
-    
-    from audit import log_action
-    log_action("UPLOAD", item_name, f"Attached image: {file.filename}")
-    
-    return {"message": "Image uploaded successfully", "image_url": image_url}
