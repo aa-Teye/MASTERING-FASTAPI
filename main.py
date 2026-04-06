@@ -41,16 +41,7 @@ manager = InventoryManager()
 
 @app.get("/inventory", tags=["Public"])
 def get_all_gear():
-    """Retrieve the full list of media assets."""
-    return {"total_count": len(manager.vault), "assets": manager.vault}
-
-@app.get("/inventory/search", tags=["Public"])
-def search_gear(status: str = None):
-    """Search for gear by status (e.g., ?status=Operational)."""
-    if not status:
-        raise HTTPException(status_code=400, detail="Please provide a status.")
-    results = {name: info for name, info in manager.vault.items() if info["status"].lower() == status.lower()}
-    return {"count": len(results), "results": results}
+    """Retrieve t
 
 @app.get("/inventory/stats", tags=["Public"])
 def get_inventory_stats():
