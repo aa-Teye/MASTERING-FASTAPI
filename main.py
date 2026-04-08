@@ -56,9 +56,7 @@ def search_gear(status: str = None):
 def get_inventory_stats():
     """Dashboard analytics for the media department."""
     total = len(manager.vault)
-    operational = sum(1 for g in manager.vault.values() if g["status"].lower() == "operational")
-    maintenance = sum(1 for g in manager.vault.values() if g["status"].lower() == "maintenance")
-    health = (operational / total * 100) if total > 0 else 0
+    operational = sum(1 for g i 0 else 0
 
     return {
         "total_gear_count": total,
