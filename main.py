@@ -86,7 +86,9 @@ def update_gear_status(item_name: str, update_data: GearUpdate):
 
 @app.delete("/inventory/delete/{item_name}", dependencies=[Depends(verify_admin)], tags=["Admin"])
 def delete_gear(item_name: str):
-    """Permanently d
+    """Permanently delete an item."""
+    success = manager.delete_item(item_name)
+    if not success:
         raise HTTPException(status_code=404, detail="Item not found.")
     return {"message": f"🚨 Successfully deleted {item_name}."}
 
