@@ -24,7 +24,4 @@ def get_recent_logs(limit: int = 10):
         return ["No logs found."]
     
     with open(LOG_FILE, "r") as file:
-        lines = file.readlines()
-        
-    # Reverse the list to get the newest logs first, and limit the amount
-    return [line.strip() for line in reversed(lines[-limit:])]
+        lines = fi
