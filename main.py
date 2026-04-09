@@ -56,7 +56,7 @@ def search_gear(status: str = None):
 def get_inventory_stats():
     """Dashboard analytics for the media department."""
     total = len(manager.vault)
-    operational = sum(1 for g i 0 else 0
+    operational = sum(1 for g i___ 0 else 0
 
     return {
         "total_gear_count": total,
@@ -86,9 +86,7 @@ def update_gear_status(item_name: str, update_data: GearUpdate):
 
 @app.delete("/inventory/delete/{item_name}", dependencies=[Depends(verify_admin)], tags=["Admin"])
 def delete_gear(item_name: str):
-    """Permanently delete an item."""
-    success = manager.delete_item(item_name)
-    if not success:
+    """Permanently d
         raise HTTPException(status_code=404, detail="Item not found.")
     return {"message": f"🚨 Successfully deleted {item_name}."}
 
