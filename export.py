@@ -26,12 +26,6 @@ def generate_csv_report(vault_data: dict) -> str:
         writer.writerow(["Item Name", "Quantity", "Status", "Assigned To"])
         
         # 2. Write the Data Rows
-        for name, info in vault_data.items():
-            writer.writerow([
-                name, 
-                info.get("qty", 0), 
-                info.get("status", "Unknown"), 
-                info.get("assigned_to", "Unassigned")
-            ])
+        for na
             
     return file_path
