@@ -75,9 +75,7 @@ def with_retry(
     return decorator
 
 
-# ==========================================
-# 🚀 USAGE EXAMPLE
-# ==========================================
+
 if __name__ == "__main__":
     import random
     
@@ -100,7 +98,7 @@ if __name__ == "__main__":
     async def main():
         try:
             result = await fetch_external_user_data(404)
-            print(f"\n✅ SUCCESS: {result}")
+            print(f"\n SUCCESS: {result}")
         except MaxRetriesExceededError:
             print("\n❌ FATAL: Could not retrieve data after all retries.")
 
