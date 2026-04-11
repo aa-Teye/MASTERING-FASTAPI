@@ -84,3 +84,12 @@ if __name__ == "__main__":
             
         return {"id": str(user_id), "status": "verified", "role": "admin"}
 
+    # Run the async simulation
+    async def main():
+        try:
+            result = await fetch_external_user_data(404)
+            print(f"\n SUCCESS: {result}")
+        except MaxRetriesExceededError:
+            print("\n❌ FATAL: Could not retrieve data after all retries.")
+
+    asyncio.run(main())
