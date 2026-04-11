@@ -31,11 +31,6 @@ def with_retry(
     A decorator that retries an asynchronous function if specific exceptions are raised.
     Uses an exponential backoff strategy (1s, 2s, 4s, 8s...).
 
-    Args:
-        max_attempts: The absolute maximum number of times to try the execution.
-        base_delay: The starting delay in seconds between retries.
-        max_delay: The cap on the delay to prevent infinitely long waits.
-        exceptions: A tuple of exception types that should trigger a retry.
     """
     def decorator(func: FuncType[R]) -> FuncType[R]:
         @wraps(func)
