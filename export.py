@@ -1,9 +1,4 @@
-"""
-core/resilience.py
 
-Enterprise-grade decorators for network resilience and fault tolerance.
-Implements exponential backoff and basic circuit breaking for async network calls.
-"""
 
 import asyncio
 import logging
