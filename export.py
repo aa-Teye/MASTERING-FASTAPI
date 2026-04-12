@@ -93,3 +93,156 @@ if __name__ == "__main__":
             print("\ FATAL: Could not retrieve data after all retries.")
 
     asyncio.run(main())
+
+"""
+core/event_bus.py
+
+Enterprise-grade Asynchronous Event Bus (Publisher/Subscriber Pattern).
+Decouples domain logic from background tasks to ensure high-performance API response times.
+"""
+
+import asyncio
+import logging
+import uuid
+from datetime import datetime, timezone
+from dataclasses import dataclass, field
+from typing import Callable, Dict, List, TypeVar, Awaitable, Any
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# ==========================================
+# 📦 1. EVENT SCHEMA DEFINITION
+# ==========================================
+
+@dataclass
+class Event:
+    """Base class for all system events. Immutable by design."""
+    name: str
+    payload: Dict[str, Any]
+    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Type hinting for subscriber callbacks
+# A subscriber must be an async function that takes an Event and returns nothing
+SubscriberCallback = Callable[[Event], Awaitable[None]]
+
+# ==========================================
+# 🚦 2. THE EVENT BUS (THE BROKER)
+# ==========================================
+
+class AsyncEventBus:
+    """
+    A Singleton Event Bus that manages topics and routes messages to subscribers.
+    """
+    _instance = None
+
+    def __new__(cls):
+        # Ensure only one Event Bus exists in the entire application (Singleton Pattern)
+        if cls._instance is None:
+            cls._instance = super(AsyncEventBus, cls).__new__(cls)
+            cls._instance.subscribers: Dict[str, List[SubscriberCallback]] = {}
+            cls._instance.queue: asyncio.Queue = asyncio.Queue()
+        return cls._instance
+
+    def subscribe(self, event_name: str, callback: SubscriberCallback) -> None:
+        """Registers a function to listen for a specific event."""
+        if event_name not in self.subscribers:
+            self.subscribers[event_name] = []
+        self.subscribers[event_name].append(callback)
+        logger.info(f"Subscribed '{callback.__name__}' to event: {event_name}")
+
+    async def publish(self, event: Event) -> None:
+        """Puts an event onto the queue immediately and frees up the main thread."""
+        await self.queue.put(event)
+        logger.debug(f"Event published to queue: {event.name} ({event.event_id})")
+
+    async def _process_event(self, event: Event) -> None:
+        """Routes the event to all interested subscribers concurrently."""
+        if event.name not in self.subscribers:
+            logger.warning(f"No subscribers found for event: {event.name}")
+            return
+
+        # Gather all subscriber functions for this event
+        callbacks = self.subscribers[event.name]
+        
+        # Execute all subscribers concurrently using asyncio.gather
+        tasks = [callback(event) for callback in callbacks]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Expert Error Handling: Log errors without crashing the whole bus
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error(f"Subscriber failed processing event '{event.name}': {result}")
+
+    async def start_worker(self) -> None:
+        """Background loop that constantly watches the queue for new events."""
+        logger.info("Event Bus Worker Started. Listening for events...")
+        while True:
+            # This will pause the loop until an event is actually in the queue
+            event: Event = await self.queue.get()
+            
+            try:
+                # Process the event
+                await self._process_event(event)
+            finally:
+                # Tell the queue this task is fully complete
+                self.queue.task_done()
+
+
+# ==========================================
+# 🚀 3. USAGE EXAMPLE (SIMULATING AN API)
+# ==========================================
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | [%(levelname)s] %(message)s")
+
+    bus = AsyncEventBus()
+
+    # --- THE SUBSCRIBERS (Background Workers) ---
+    async def send_welcome_email(event: Event) -> None:
+        """Simulates a slow email API call."""
+        user = event.payload.get("username")
+        logger.info(f"[Email Worker] Preparing email for {user}...")
+        await asyncio.sleep(2)  # Simulating network delay
+        logger.info(f"[Email Worker] ✅ Welcome email sent to {user}!")
+
+    async def update_analytics_dashboard(event: Event) -> None:
+        """Simulates writing to a data warehouse."""
+        user = event.payload.get("username")
+        logger.info(f"[Analytics Worker] Updating daily sign-up metrics for {user}...")
+        await asyncio.sleep(0.5)
+        logger.info(f"[Analytics Worker] ✅ Metrics updated!")
+
+    # Register the workers to listen for the "USER_REGISTERED" shout
+    bus.subscribe("USER_REGISTERED", send_welcome_email)
+    bus.subscribe("USER_REGISTERED", update_analytics_dashboard)
+
+    # --- THE PUBLISHER (Your API Route) ---
+    async def api_create_user(username: str) -> dict:
+        """Simulates a FastAPI POST route."""
+        logger.info(f"--- API Request: Create User '{username}' ---")
+        
+        # 1. Save to DB (Fast)
+        # db.save(username) 
+        
+        # 2. Fire the event into the void (Instant)
+        new_event = Event(name="USER_REGISTERED", payload={"username": username})
+        await bus.publish(new_event)
+        
+        # 3. Return to the user instantly! (0.01 seconds)
+        return {"status": "success", "message": "User created instantly!"}
+
+    # --- RUNNING THE SIMULATION ---
+    async def main():
+        # 1. Start the background worker as a separate asynchronous task
+        worker_task = asyncio.create_task(bus.start_worker())
+
+        # 2. Hit our fake API route
+        response = await api_create_user("Awonders_Dev")
+        logger.info(f"API Response Sent to Browser: {response}")
+
+        # Wait for the queue to finish processing before we shut down the script
+        await bus.queue.join()
+        worker_task.cancel() # Shut down the worker
+
+    asyncio.run(main())
