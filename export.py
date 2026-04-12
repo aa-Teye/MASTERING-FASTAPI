@@ -222,8 +222,7 @@ if __name__ == "__main__":
         """Simulates a FastAPI POST route."""
         logger.info(f"--- API Request: Create User '{username}' ---")
         
-        # 1. Save to DB (Fast)
-        # db.save(username) 
+       
         
         # 2. Fire the event into the void (Instant)
         new_event = Event(name="USER_REGISTERED", payload={"username": username})
@@ -232,16 +231,16 @@ if __name__ == "__main__":
         # 3. Return to the user instantly! (0.01 seconds)
         return {"status": "success", "message": "User created instantly!"}
 
-    # --- RUNNING THE SIMULATION ---
+
     async def main():
         # 1. Start the background worker as a separate asynchronous task
         worker_task = asyncio.create_task(bus.start_worker())
 
-        # 2. Hit our fake API route
+    
         response = await api_create_user("Awonders_Dev")
         logger.info(f"API Response Sent to Browser: {response}")
 
-        # Wait for the queue to finish processing before we shut down the script
+       
         await bus.queue.join()
         worker_task.cancel() # Shut down the worker
 
