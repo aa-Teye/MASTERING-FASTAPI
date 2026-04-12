@@ -224,7 +224,6 @@ if __name__ == "__main__":
         
        
         
-        # 2. Fire the event into the void (Instant)
         new_event = Event(name="USER_REGISTERED", payload={"username": username})
         await bus.publish(new_event)
         
@@ -233,7 +232,7 @@ if __name__ == "__main__":
 
 
     async def main():
-        # 1. Start the background worker as a separate asynchronous task
+       
         worker_task = asyncio.create_task(bus.start_worker())
 
     
