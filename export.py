@@ -90,6 +90,6 @@ if __name__ == "__main__":
             result = await fetch_external_user_data(404)
             print(f"\n SUCCESS: {result}")
         except MaxRetriesExceededError:
-            print("\n❌ FATAL: Could not retrieve data after all retries.")
+            print("\ FATAL: Could not retrieve data after all retries.")
 
     asyncio.run(main())
