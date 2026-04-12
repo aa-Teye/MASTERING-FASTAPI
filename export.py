@@ -183,27 +183,25 @@ class AsyncEventBus:
             event: Event = await self.queue.get()
             
             try:
-                # Process the event
+                
                 await self._process_event(event)
             finally:
-                # Tell the queue this task is fully complete
+                
                 self.queue.task_done()
 
 
-# ==========================================
-# 🚀 3. USAGE EXAMPLE (SIMULATING AN API)
-# ==========================================
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | [%(levelname)s] %(message)s")
 
     bus = AsyncEventBus()
 
-    # --- THE SUBSCRIBERS (Background Workers) ---
+   
     async def send_welcome_email(event: Event) -> None:
         """Simulates a slow email API call."""
         user = event.payload.get("username")
         logger.info(f"[Email Worker] Preparing email for {user}...")
-        await asyncio.sleep(2)  # Simulating network delay
+        await asyncio.sleep(2)  
         logger.info(f"[Email Worker] ✅ Welcome email sent to {user}!")
 
     async def update_analytics_dashboard(event: Event) -> None:
@@ -211,13 +209,12 @@ if __name__ == "__main__":
         user = event.payload.get("username")
         logger.info(f"[Analytics Worker] Updating daily sign-up metrics for {user}...")
         await asyncio.sleep(0.5)
-        logger.info(f"[Analytics Worker] ✅ Metrics updated!")
+        logger.info(f"[Analytics Worker]  Metrics updated!")
 
     # Register the workers to listen for the "USER_REGISTERED" shout
     bus.subscribe("USER_REGISTERED", send_welcome_email)
     bus.subscribe("USER_REGISTERED", update_analytics_dashboard)
 
-    # --- THE PUBLISHER (Your API Route) ---
     async def api_create_user(username: str) -> dict:
         """Simulates a FastAPI POST route."""
         logger.info(f"--- API Request: Create User '{username}' ---")
